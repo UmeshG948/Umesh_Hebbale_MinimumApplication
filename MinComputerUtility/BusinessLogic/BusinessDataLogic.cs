@@ -58,7 +58,7 @@ namespace MinComputerUtility.BusinessLogic
                         minimumReqiredApplications.Add(appCoumpter.UserID);
                     }
 
-                    //Below  are the Scenario is added as additional feature as per requirement these scenario in not require
+                    //Below Scenario is added as additional feature as per requirement these scenario are not necessary
                     #region Additional features
                     if (appComputersList.Count() % 2 == 0)
                     {
@@ -78,8 +78,7 @@ namespace MinComputerUtility.BusinessLogic
                     #endregion Additional features
                 }
                 #endregion User with Both desktop and laptop
-
-                //if ((appComputersList.All(x => x.ComputerType.ToUpper().Equals(comupterType[0]))) || (appComputersList.All(x => x.ComputerType.ToUpper().Equals(comupterType[1]))))
+               
                 #region Handles other criteria 
                 else
                 {
