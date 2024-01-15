@@ -1,6 +1,6 @@
 ﻿using MinComputerUtility.AppRepositories;
 using MinComputerUtility.BusinessLogic;
-using MinComputerUtility.Log;
+using MinComputerUtility.LogHandler;
 using MinComputerUtility.Model;
 using System;
 using System.Collections.Generic;
@@ -35,7 +35,7 @@ namespace MinComputerUtility
             }
             finally
             {
-                Logger.WriteLog(_messageLog);
+                LogHanlder.WriteLog(_messageLog);
             }
         }
 

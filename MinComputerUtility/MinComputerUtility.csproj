@@ -72,7 +72,7 @@
     <Compile Include="AppRepositories\AppRepository.cs" />
     <Compile Include="AppRepositories\IRepository.cs" />
     <Compile Include="BusinessLogic\BusinessDataLogic.cs" />
-    <Compile Include="Log\Logger.cs" />
+    <Compile Include="LogHandler\LogHandler.cs" />
     <Compile Include="Model\AppComputer.cs" />
     <Compile Include="Processor.cs" />
     <Compile Include="Program.cs" />
