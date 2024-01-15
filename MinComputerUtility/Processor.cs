@@ -39,6 +39,7 @@ namespace MinComputerUtility
             }
         }
 
+        
         public static void LogMessage(string message)
         {
             _messageLog.AppendLine(message);
