@@ -9,7 +9,7 @@ namespace MinComputerUtility.AppRepositories
 {
     public interface IRepository
     {
-        IList<AppComputer> GetApplicationComputerDetails(int appId);
+        IList<AppComputer> GetApplicationComputerDetails(int appId, string filePath);
     }
 
 }

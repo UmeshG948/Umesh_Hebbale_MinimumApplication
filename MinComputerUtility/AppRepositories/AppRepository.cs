@@ -13,13 +13,11 @@ namespace MinComputerUtility.AppRepositories
 {
     public class AppRepository : IRepository
     {
-        private readonly string _filePath = Path.GetFullPath(ConfigurationSettings.AppSettings["FilePath"]);
-          
-        
+       
         //Return Application data
-        public IList<AppComputer> GetApplicationComputerDetails(int appId)
+        public IList<AppComputer> GetApplicationComputerDetails(int appId, string filePath)
         {
-            return GetAppComputers(appId);
+            return GetAppComputers(appId,filePath);
         }
 
         /// <summary>
@@ -27,11 +25,12 @@ namespace MinComputerUtility.AppRepositories
         /// </summary>
         /// <param name="appId">ApplicationID</param>
         /// <returns>List of user and computer associated to specific application</returns>
-        private IList<AppComputer> GetAppComputers(int appId)
+        private IList<AppComputer> GetAppComputers(int appId, string filePath)
         {
+
             try
             {
-                using (var reader = new StreamReader(_filePath))
+                using (var reader = new StreamReader(@""+filePath))
                 {
                     using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
                     {

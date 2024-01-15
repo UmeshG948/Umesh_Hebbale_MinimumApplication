@@ -22,7 +22,7 @@ namespace MinComputerUtility
                 string needToProcess = Console.ReadLine();
                 if (needToProcess.ToLower().Trim() == "yes")
                 {
-                    Processor.Process();
+                    Main(args);
                 }
                 Console.WriteLine("Press enter to end the process");
                 Console.ReadLine();
@@ -30,6 +30,7 @@ namespace MinComputerUtility
             catch
             {
                 Console.WriteLine("Job has failed due to exception please refer the logs");
+                Console.ReadLine();
             }
         }
     }
