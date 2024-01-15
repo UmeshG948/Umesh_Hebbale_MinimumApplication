@@ -38,5 +38,14 @@ namespace MiniComputerTest
             var result = _businessLogic.GetSameCustomerHavingLapAndDeskRecord(_csvData);
             Assert.IsNotNull(result);
         }
+
+        [TestMethod]
+        public void GetRecordsWithMultipleOrSingleComputerTypeTest()
+        {
+            var duplicateData = _businessLogic.GetDuplicateRecords(_csvData).ToList();
+            var listOfUserWithUniqueComputerType = _businessLogic.GetSameCustomerHavingLapAndDeskRecord(_csvData).ToList();
+            listOfUserWithUniqueComputerType.AddRange(duplicateData);
+            var result = _businessLogic.GetRecordsWithMultipleOrSingleComputerType(_csvData, listOfUserWithUniqueComputerType);
+        }
     } 
 }
