@@ -16,11 +16,12 @@ namespace MiniComputerTest
         private static BusinessDataLogic _businessLogic = new BusinessDataLogic();
         private static IRepository _repo = new AppRepository();
         private static string _filePath = ConfigurationSettings.AppSettings["FilePath"];
-        private static IList<AppComputer> _csvData = _repo.GetApplicationComputerDetails(374, _filePath);
+        private static IList<AppComputer> _csvData = _repo.GetApplicationComputerDetails(169, _filePath);
 
         [TestMethod]
         public void GetMinimumApplicationCopies()
-        {
+        {            
+
             var result = _businessLogic.GetMinAppCount(_csvData);
             Assert.IsNotNull(result);
         }
@@ -28,24 +29,30 @@ namespace MiniComputerTest
         [TestMethod]
         public void GetDuplicateRecordTest() 
         {
-            var result = _businessLogic.GetDuplicateRecords(_csvData);
-            Assert.IsNotNull(result);
+            List<long> duplicateRecords;
+            _businessLogic.GetDuplicateRecords(_csvData, out duplicateRecords);
+            Assert.IsNotNull(duplicateRecords);
         }
 
         [TestMethod]
         public void GetSameCustomerHavingLapAndDeskRecordTest() 
         {
-            var result = _businessLogic.GetSameCustomerHavingLapAndDeskRecord(_csvData);
-            Assert.IsNotNull(result);
+            List<long> count;
+            _businessLogic.GetSameCustomerHavingLapAndDeskRecord(_csvData, out count);
+            Assert.IsNotNull(count);
         }
 
         [TestMethod]
         public void GetRecordsWithMultipleOrSingleComputerTypeTest()
         {
-            var duplicateData = _businessLogic.GetDuplicateRecords(_csvData).ToList();
-            var listOfUserWithUniqueComputerType = _businessLogic.GetSameCustomerHavingLapAndDeskRecord(_csvData).ToList();
-            listOfUserWithUniqueComputerType.AddRange(duplicateData);
-            var result = _businessLogic.GetRecordsWithMultipleOrSingleComputerType(_csvData, listOfUserWithUniqueComputerType);
+            List<long> count;
+            List<long> duplicateRecords;
+            List<long> countedCustomerId;
+            _businessLogic.GetDuplicateRecords(_csvData, out duplicateRecords);
+            _businessLogic.GetSameCustomerHavingLapAndDeskRecord(_csvData, out count);
+            count.AddRange(duplicateRecords);
+            _businessLogic.GetRecordsWithMultipleOrSingleComputerType(_csvData, count, out countedCustomerId);
+            Assert.IsNotNull(countedCustomerId);
         }
     } 
 }

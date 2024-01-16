@@ -24,118 +24,119 @@ namespace MinComputerUtility.BusinessLogic
         {
 
             List<int> minimumReqiredApplications = new List<int>();
+            IDictionary<long, int> keyValuePairs = new Dictionary<long, int>();
+            List<AppComputer> appComputersList = new List<AppComputer>();
 
             //Below logic gets all the USerID having duplicate values.
             //Note: Below code covers Example 3 from requirement document
             var duplicateUserIDs = appComputers
                                   .GroupBy(x => new { x.UserID, x.ComputerID })
                                   .Where(group => group.Count() > 1)
-                                  .Select(group => group.Key.UserID);
+                                  .Select(group => new { group.Key.ComputerID, group.Key.UserID });
 
             //Filter the duplicate values and get list of the information 
-            var appCoumpterInfo = appComputers.Where(x => !duplicateUserIDs.Contains(x.UserID));
+            var appCoumpterInfo = appComputers.Where(x => !duplicateUserIDs.Any(y => y.ComputerID == x.ComputerID));
 
             foreach (var appCoumpter in appCoumpterInfo)
             {
 
-                List<AppComputer> appComputersList = appComputers.Where(x => x.UserID == appCoumpter.UserID).ToList();
+                appComputersList = appCoumpterInfo
+                                   .Where(x => x.UserID == appCoumpter.UserID && !keyValuePairs.ContainsKey(x.ComputerID))
+                                   .ToList();
 
-                #region User with Both desktop and laptop
+
                 //Below logic covers Example 1 from requirement document.
-                if (appComputersList.Any(x => x.ComputerType.ToUpper() == comupterType[0]) && appComputersList.Any(x => x.ComputerType.ToUpper() == comupterType[1]))
+                if ((appComputersList.Any(x => x.ComputerType.ToUpper() == comupterType[0]) && appComputersList.Any(x => x.ComputerType.ToUpper() == comupterType[1])))
                 {
-                    //Below If condition is for: Already user exist then no need check with other conditions just skip
-                    if (minimumReqiredApplications.Contains(appCoumpter.UserID))
-                        continue;
-                    //this if condition is just added to skip below additional feature
-                    if (appComputersList.Count() == 2)
-                    {
-                        //covers Example 1 from requirement document
-                        minimumReqiredApplications.Add(appCoumpter.UserID);
-                    }
+                    //Below query is used to avoid multipe mapping to on computer type
+                    //Ex: same userID having 2 desktop and 2 laptop then it should count only 2 for that user.
+                    AppComputer appComputerWithDiffCompType = appCoumpter.ComputerType.Trim().ToUpper() == comupterType[0] ?
+                                              appComputersList.FirstOrDefault(x => x.ComputerType.Trim().ToUpper() == comupterType[1])
+                                              : appComputersList.FirstOrDefault(x => x.ComputerType.Trim().ToUpper() == comupterType[0]);
 
-                    //Note: Below Additional features region is added as additional feature as per requirement these scenario are not necessary
-                    //additional feature are added as part of handling worst cases these are not part of requirement
-                    #region Additional features
-                    else if (appComputersList.Count > 2)
-                    {
-                        int count = (appComputersList.Count % 2 == 0) ? appComputersList.Count / 2 : (appComputersList.Count - 1) / 2;
-                        for (int i = 1; i <= count; i++)
-                        {
-                            minimumReqiredApplications.Add(appCoumpter.UserID);
-                        }
-                    }
-                    #endregion Additional features
+                    minimumReqiredApplications.Add(appCoumpter.UserID);
+
+                    keyValuePairs.Add(appCoumpter.ComputerID, appCoumpter.UserID);
+                    keyValuePairs.Add(appComputerWithDiffCompType.ComputerID, appComputerWithDiffCompType.UserID);
                 }
-                #endregion User with Both desktop and laptop
 
-                #region Handles other criteria 
                 //Below code covers Example 2 where same user ID having same application installed on (2 desktop or 2 laptop) or only (1 desktop or 1 laptop)
-                else
+                else if (!keyValuePairs.ContainsKey(appCoumpter.ComputerID))
                 {
                     minimumReqiredApplications.Add(appComputersList.FirstOrDefault(x => x.UserID == appCoumpter.UserID).UserID);
                 }
-                #endregion Handles other criteria 
+
             }
-            minimumReqiredApplications.AddRange(duplicateUserIDs);
+
+            minimumReqiredApplications.AddRange(duplicateUserIDs.Select(x => x.UserID));
             return minimumReqiredApplications.Count();
         }
         #endregion Minimum Application required
 
 
         #region Methods are for test purpose only
-        public IEnumerable<int> GetDuplicateRecords(IList<AppComputer> appComputerList)
+        public int GetDuplicateRecords(IList<AppComputer> appComputerList, out List<long> computerIds)
         {
-            return appComputerList.GroupBy(x => new { x.UserID, x.ComputerID })
-                                  .Where(group => group.Count() > 1)
-                                  .Select(group => group.Key.UserID);
+            computerIds = new List<long>();
+            var duplicateRec = appComputerList.GroupBy(x => new { x.UserID, x.ComputerID })
+                                .Where(group => group.Count() > 1)
+                                .Select(group => new { group.Key.ComputerID, group.Key.UserID });
+
+            computerIds.AddRange(duplicateRec.Select(x => x.ComputerID));
+            return duplicateRec.Count();
         }
 
-        public IEnumerable<int> GetSameCustomerHavingLapAndDeskRecord(IList<AppComputer> appComputers)
+        public int GetSameCustomerHavingLapAndDeskRecord(IList<AppComputer> appComputers, out List<long> computerIds)
         {
-            List<int> count = new List<int>();
-            var duplicateUserIDs = GetDuplicateRecords(appComputers);
+            computerIds = new List<long>();
+            int count = 0;
+            IDictionary<long, int> keyValuePairs = new Dictionary<long, int>();
+            List<AppComputer> appComputersList = new List<AppComputer>();
 
-            var appCoumpterInfo = appComputers.Where(x => !duplicateUserIDs.Contains(x.UserID));
+            var duplicateUserIDs = appComputers
+                                  .GroupBy(x => new { x.UserID, x.ComputerID })
+                                  .Where(group => group.Count() > 1)
+                                  .Select(group => new { group.Key.ComputerID, group.Key.UserID });
+
+            //Filter the duplicate values and get list of the information 
+            var appCoumpterInfo = appComputers.Where(x => !duplicateUserIDs.Any(y => y.ComputerID == x.ComputerID));
 
             foreach (var appCoumpter in appCoumpterInfo)
             {
 
-                List<AppComputer> appComputersList = appComputers.Where(x => x.UserID == appCoumpter.UserID).ToList();
+                appComputersList = appCoumpterInfo
+                                   .Where(x => x.UserID == appCoumpter.UserID && !keyValuePairs.ContainsKey(x.ComputerID))
+                                   .ToList();
 
-                if (appComputersList.Any(x => x.ComputerType.ToUpper() == comupterType[0]) && appComputersList.Any(x => x.ComputerType.ToUpper() == comupterType[1]))
+
+                if ((appComputersList.Any(x => x.ComputerType.ToUpper() == comupterType[0]) && appComputersList.Any(x => x.ComputerType.ToUpper() == comupterType[1])))
                 {
-                    if (count.Contains(appCoumpter.UserID))
-                        continue;
+                    //Below query is used to avoid multipe mapping to on computer type
+                    //Ex: same userID having 2 desktop and 2 laptop then it should count only 2 for that user.
+                    AppComputer appComputerWithDiffCompType = appCoumpter.ComputerType.Trim().ToUpper() == comupterType[0] ?
+                                              appComputersList.FirstOrDefault(x => x.ComputerType.Trim().ToUpper() == comupterType[1])
+                                              : appComputersList.FirstOrDefault(x => x.ComputerType.Trim().ToUpper() == comupterType[0]);
 
-                    if (appComputersList.Count() == 2)
-                    {
-                        count.Add(appCoumpter.UserID);
-                    }
-                    else if (appComputersList.Count > 2)
-                    {
-                        int num = (appComputersList.Count % 2 == 0) ? appComputersList.Count / 2 : (appComputersList.Count - 1) / 2;
-                        for (int i = 1; i <= num; i++)
-                        {
-                            count.Add(appCoumpter.UserID);
-                        }
-                    }
+                    count++;
+
+                    keyValuePairs.Add(appCoumpter.ComputerID, appCoumpter.UserID);
+                    keyValuePairs.Add(appComputerWithDiffCompType.ComputerID, appComputerWithDiffCompType.UserID);
                 }
             }
+            computerIds.AddRange(keyValuePairs.Keys);
             return count;
         }
 
-        public IEnumerable<int> GetRecordsWithMultipleOrSingleComputerType(IList<AppComputer> appComputers, List<int> userToExclude)
+        public void GetRecordsWithMultipleOrSingleComputerType(IList<AppComputer> appComputers, IList<long> userToExclude, out List<long> customerIdList)
         {
 
-            List<int> count = new List<int>();
-           var appCoumpterInfo = appComputers.Where(x => !userToExclude.Contains(x.UserID));
+            customerIdList = new List<long>();
+            var appCoumpterInfo = appComputers.Where(x => !userToExclude.Contains(x.ComputerID));
 
             foreach (var appCoumpter in appCoumpterInfo)
             {
-                count.Add(appCoumpter.UserID);
+                customerIdList.Add(appCoumpter.ComputerID);
             }
-            return count;
         }
 
         #endregion Methods are for test purpose only
