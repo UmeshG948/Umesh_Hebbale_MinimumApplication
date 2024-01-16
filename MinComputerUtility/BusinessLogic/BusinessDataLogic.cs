@@ -127,16 +127,17 @@ namespace MinComputerUtility.BusinessLogic
             return count;
         }
 
-        public void GetRecordsWithMultipleOrSingleComputerType(IList<AppComputer> appComputers, IList<long> userToExclude, out List<long> customerIdList)
+        public List<long> GetRecordsWithMultipleOrSingleComputerType(IList<AppComputer> appComputers, IList<long> userToExclude)
         {
 
-            customerIdList = new List<long>();
+            List<long> customerIdList = new List<long>();
             var appCoumpterInfo = appComputers.Where(x => !userToExclude.Contains(x.ComputerID));
 
             foreach (var appCoumpter in appCoumpterInfo)
             {
                 customerIdList.Add(appCoumpter.ComputerID);
             }
+            return customerIdList;
         }
 
         #endregion Methods are for test purpose only

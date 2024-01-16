@@ -30,7 +30,7 @@ namespace MiniComputerTest
         public void GetDuplicateRecordTest() 
         {
             List<long> duplicateRecords;
-            _businessLogic.GetDuplicateRecords(_csvData, out duplicateRecords);
+            var result = _businessLogic.GetDuplicateRecords(_csvData, out duplicateRecords);
             Assert.IsNotNull(duplicateRecords);
         }
 
@@ -38,7 +38,7 @@ namespace MiniComputerTest
         public void GetSameCustomerHavingLapAndDeskRecordTest() 
         {
             List<long> count;
-            _businessLogic.GetSameCustomerHavingLapAndDeskRecord(_csvData, out count);
+            var result =_businessLogic.GetSameCustomerHavingLapAndDeskRecord(_csvData, out count);
             Assert.IsNotNull(count);
         }
 
@@ -47,12 +47,11 @@ namespace MiniComputerTest
         {
             List<long> count;
             List<long> duplicateRecords;
-            List<long> countedCustomerId;
             _businessLogic.GetDuplicateRecords(_csvData, out duplicateRecords);
             _businessLogic.GetSameCustomerHavingLapAndDeskRecord(_csvData, out count);
             count.AddRange(duplicateRecords);
-            _businessLogic.GetRecordsWithMultipleOrSingleComputerType(_csvData, count, out countedCustomerId);
-            Assert.IsNotNull(countedCustomerId);
+            var result = _businessLogic.GetRecordsWithMultipleOrSingleComputerType(_csvData, count);
+            Assert.IsNotNull(result);
         }
     } 
 }
