@@ -22,20 +22,37 @@ namespace MinComputerUtility.BusinessLogic
         #region Minimum Application required
         public int GetMinAppCount(IList<AppComputer> appComputers)
         {
-
-            List<int> minimumReqiredApplications = new List<int>();
+            int justCount = 0;  
+            int count = 0;
             IDictionary<long, int> keyValuePairs = new Dictionary<long, int>();
             List<AppComputer> appComputersList = new List<AppComputer>();
 
             //Below logic gets all the USerID having duplicate values.
             //Note: Below code covers Example 3 from requirement document
-            var duplicateUserIDs = appComputers
-                                  .GroupBy(x => new { x.UserID, x.ComputerID })
-                                  .Where(group => group.Count() > 1)
-                                  .Select(group => new { group.Key.ComputerID, group.Key.UserID });
+            var appCoumpterInfo = appComputers
+                                  .GroupBy(x => new { x.ComputerID, x.UserID })
+                                  .Select(x=>x.FirstOrDefault());
 
-            //Filter the duplicate values and get list of the information 
-            var appCoumpterInfo = appComputers.Where(x => !duplicateUserIDs.Any(y => y.ComputerID == x.ComputerID));
+            foreach (var app in appCoumpterInfo.Select(x => x.UserID).Distinct())
+            {
+                var noOfDeskTop = appCoumpterInfo.Where(x => x.UserID == app && x.ComputerType.Trim().ToUpper() == comupterType[0]).Count();
+                var noOfLaptop = appCoumpterInfo.Where(x => x.UserID == app && x.ComputerType.Trim().ToUpper() == comupterType[1]).Count();
+
+                if (noOfDeskTop == 0 || noOfLaptop == 0)
+                {
+                    justCount += noOfDeskTop != 0 ? noOfDeskTop : noOfLaptop;
+                }
+                else if (noOfDeskTop > noOfLaptop)
+                {
+                    justCount += (noOfDeskTop + noOfLaptop) - noOfLaptop;
+                }
+                else
+                {
+                    justCount += (noOfDeskTop + noOfLaptop) - noOfDeskTop;
+                }
+            }
+
+            //Either above code will work or below code will work
 
             foreach (var appCoumpter in appCoumpterInfo)
             {
@@ -46,7 +63,8 @@ namespace MinComputerUtility.BusinessLogic
 
 
                 //Below logic covers Example 1 from requirement document.
-                if ((appComputersList.Any(x => x.ComputerType.ToUpper() == comupterType[0]) && appComputersList.Any(x => x.ComputerType.ToUpper() == comupterType[1])))
+                if ((appComputersList.Any(x => x.ComputerType.ToUpper() == comupterType[0]) && appComputersList.Any(x => x.ComputerType.ToUpper() == comupterType[1]))
+                    && !keyValuePairs.ContainsKey(appCoumpter.ComputerID))
                 {
                     //Below query is used to avoid multipe mapping to on computer type
                     //Ex: same userID having 2 desktop and 2 laptop then it should count only 2 for that user.
@@ -54,7 +72,7 @@ namespace MinComputerUtility.BusinessLogic
                                               appComputersList.FirstOrDefault(x => x.ComputerType.Trim().ToUpper() == comupterType[1])
                                               : appComputersList.FirstOrDefault(x => x.ComputerType.Trim().ToUpper() == comupterType[0]);
 
-                    minimumReqiredApplications.Add(appCoumpter.UserID);
+                    count++;
 
                     keyValuePairs.Add(appCoumpter.ComputerID, appCoumpter.UserID);
                     keyValuePairs.Add(appComputerWithDiffCompType.ComputerID, appComputerWithDiffCompType.UserID);
@@ -63,13 +81,12 @@ namespace MinComputerUtility.BusinessLogic
                 //Below code covers Example 2 where same user ID having same application installed on (2 desktop or 2 laptop) or only (1 desktop or 1 laptop)
                 else if (!keyValuePairs.ContainsKey(appCoumpter.ComputerID))
                 {
-                    minimumReqiredApplications.Add(appComputersList.FirstOrDefault(x => x.UserID == appCoumpter.UserID).UserID);
+                    count++;
                 }
 
             }
 
-            minimumReqiredApplications.AddRange(duplicateUserIDs.Select(x => x.UserID));
-            return minimumReqiredApplications.Count();
+            return count++;
         }
         #endregion Minimum Application required
 
